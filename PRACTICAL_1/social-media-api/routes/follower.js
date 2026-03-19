@@ -1,14 +1,16 @@
 const express = require('express');
-const router = express.Router();
-
 const {
-  getFollowers,
-  createFollower,
-  deleteFollower
+    getFollowers,
+    getFollower,
+    createFollower,
+    updateFollower,
+    deleteFollower
 } = require('../controllers/followerController');
 
-router.get('/', getFollowers);
-router.post('/', createFollower);
-router.delete('/:id', deleteFollower);
+const router = express.Router();
+
+router.route('/').get(getFollowers).post(createFollower);
+
+router.route('/:id').get(getFollower).put(updateFollower).delete(deleteFollower);
 
 module.exports = router;

@@ -1,45 +1,50 @@
 const express = require('express');
+const dotenv = require('dotenv');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
-const errorHandler = require('./middleware/errorHandler');
-const formatResponse = require('./middleware/formatResponse');
-require('dotenv').config();
+const path = require('path');
 
-const userRoutes = require('./routes/users');
-const postRoutes = require('./routes/posts');
-const commentRoutes = require('./routes/comments');
-const likeRoutes = require('./routes/likes');
-const followerRoutes = require('./routes/followers');
+// Load env vars
+dotenv.config();
 
 const app = express();
 
-// Body parser
-app.use(express.json());
-app.use(express.static('public'));
-
 // Middleware
+app.use(express.json());
 app.use(morgan('dev'));
-app.use(cors());
 app.use(helmet());
+app.use(cors());
+app.use(require('./middleware/formatResponse'));
 
-// Routes
-app.use('/users', userRoutes);
-app.use('/posts', postRoutes);
-app.use('/comments', commentRoutes);
-app.use('/likes', likeRoutes);
-app.use('/followers', followerRoutes);
-app.use(errorHandler);
-app.use(formatResponse);
+// Routes (to be defined later)
+app.use(express.static('public'));
+app.get('/api-docs', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'docs.html'));
+});
+app.use('/users', require('./routes/users'));
+app.use('/posts', require('./routes/posts'));
+// app.use('/comments', require('./routes/comments'));
+// app.use('/likes', require('./routes/likes'));
+// app.use('/followers', require('./routes/followers'));
 
-// Home route
+// Basic route
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.json({ message: 'Welcome to Social Media API' });
 });
 
-// PORT
+// Error handler middleware (to be defined later)
+app.use(require('./middleware/errorHandler'));
+app.use(require('./middleware/formatResponse'));
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running in development mode on port ${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err, promise) => {
+  console.log(`Error: ${err.message}`);
+  // Close server & exit process
+  process.exit(1);
 });
