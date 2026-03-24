@@ -7,14 +7,10 @@ const {
     deleteComment
 } = require('../controllers/userComment');
 
-router.route('/posts/:postId/comments')
-  .get(getCommentsByPost)
-  .post(createComment);
+const router = express.Router();
 
-// Direct comment routes
-router.route('/comments/:id')
-  .get(getComment)
-  .put(updateComment)
-  .delete(deleteComment);
+router.route('/').get(getComments).post(createComment);
+
+router.route('/:id').get(getComment).put(updateComment).delete(deleteComment);
 
 module.exports = router;

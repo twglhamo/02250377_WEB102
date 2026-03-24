@@ -5,55 +5,46 @@ const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
 
-// Load environment variables
+// Load env vars
 dotenv.config();
 
 const app = express();
 
-// Body parser
+// Middleware
 app.use(express.json());
-
-// Dev logging middleware
 app.use(morgan('dev'));
-
-// Security middleware
 app.use(helmet());
 app.use(cors());
-
-// Custom middleware for content negotiation
 app.use(require('./middleware/formatResponse'));
 
-// Static files
+// Routes (to be defined later)
 app.use(express.static('public'));
-
-// API Documentation
 app.get('/api-docs', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'docs.html'));
 });
-
-// Routes
-app.use('/api/users', require('./routes/users'));
-app.use('/api/posts', require('./routes/posts'));
-app.use('/api/comments', require('./routes/comments'));
-app.use('/api/likes', require('./routes/likes'));
-app.use('/api/followers', require('./routes/followers'));
+app.use('/users', require('./routes/users'));
+app.use('/posts', require('./routes/posts'));
+// app.use('/comments', require('./routes/comments'));
+// app.use('/likes', require('./routes/likes'));
+// app.use('/followers', require('./routes/followers'));
 
 // Basic route
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Social Media API' });
 });
 
-// Error handler middleware
+// Error handler middleware (to be defined later)
 app.use(require('./middleware/errorHandler'));
-
+app.use(require('./middleware/formatResponse'));
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running in development mode on port ${PORT}`);
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.log(`Error: ${err.message}`);
-  server.close(() => process.exit(1));
+  // Close server & exit process
+  process.exit(1);
 });
