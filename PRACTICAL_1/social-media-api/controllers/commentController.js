@@ -18,13 +18,21 @@ exports.getComments = asyncHandler(async (req, res, next) => {
 // @access Public
 exports.getComment = asyncHandler(async (req, res, next) => {
   const comment = comments.find(c => c.id === req.params.id);
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   if (!comment) {
     return next(
       new ErrorResponse(`Comment not found with id of ${req.params.id}`, 404)
     );
   }
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   res.status(200).json({
     success: true,
     data: comment
@@ -36,11 +44,19 @@ exports.getComment = asyncHandler(async (req, res, next) => {
 // @access Private
 exports.createComment = asyncHandler(async (req, res, next) => {
   const userId = req.header('X-User-Id');
+<<<<<<< HEAD
   
   if (!userId) {
     return next(new ErrorResponse('Not authorized', 401));
   }
   
+=======
+
+  if (!userId) {
+    return next(new ErrorResponse('Not authorized', 401));
+  }
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   const newComment = {
     id: (comments.length + 1).toString(),
     text: req.body.text,
@@ -48,9 +64,15 @@ exports.createComment = asyncHandler(async (req, res, next) => {
     user_id: userId,
     created_at: new Date().toISOString().slice(0, 10)
   };
+<<<<<<< HEAD
   
   comments.push(newComment);
   
+=======
+
+  comments.push(newComment);
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   res.status(201).json({
     success: true,
     data: newComment
@@ -62,19 +84,33 @@ exports.createComment = asyncHandler(async (req, res, next) => {
 // @access Private
 exports.updateComment = asyncHandler(async (req, res, next) => {
   const userId = req.header('X-User-Id');
+<<<<<<< HEAD
   
   let comment = comments.find(c => c.id === req.params.id);
   
+=======
+
+  let comment = comments.find(c => c.id === req.params.id);
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   if (!comment) {
     return next(
       new ErrorResponse(`Comment not found with id of ${req.params.id}`, 404)
     );
   }
+<<<<<<< HEAD
   
   if (comment.user_id !== userId) {
     return next(new ErrorResponse('Not authorized', 401));
   }
   
+=======
+
+  if (comment.user_id !== userId) {
+    return next(new ErrorResponse('Not authorized', 401));
+  }
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   const index = comments.findIndex(c => c.id === req.params.id);
 
   comments[index] = {
@@ -82,7 +118,11 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
     ...req.body,
     id: comment.id
   };
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   res.status(200).json({
     success: true,
     data: comments[index]
@@ -94,14 +134,21 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
 // @access Private
 exports.deleteComment = asyncHandler(async (req, res, next) => {
   const userId = req.header('X-User-Id');
+<<<<<<< HEAD
   
   const comment = comments.find(c => c.id === req.params.id);
   
+=======
+
+  const comment = comments.find(c => c.id === req.params.id);
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   if (!comment) {
     return next(
       new ErrorResponse(`Comment not found with id of ${req.params.id}`, 404)
     );
   }
+<<<<<<< HEAD
   
   if (comment.user_id !== userId) {
     return next(new ErrorResponse('Not authorized', 401));
@@ -110,6 +157,16 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
   const index = comments.findIndex(c => c.id === req.params.id);
   comments.splice(index, 1);
   
+=======
+
+  if (comment.user_id !== userId) {
+    return next(new ErrorResponse('Not authorized', 401));
+  }
+
+  const index = comments.findIndex(c => c.id === req.params.id);
+  comments.splice(index, 1);
+
+>>>>>>> 6247e12f432a4cc81be3296eec07bafe765fb977
   res.status(200).json({
     success: true,
     data: {}
