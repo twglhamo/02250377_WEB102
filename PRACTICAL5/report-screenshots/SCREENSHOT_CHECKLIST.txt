@@ -1,0 +1,49 @@
+
+================================================
+
+CURSOR CAPTURED (temp folder - run copy-screenshots.ps1):
+  01-app-home-feed.png          -> Page 12 testing (or error state)
+  02-login-page.png             -> Part 3 / login test
+  03-upload-auth-required.png   -> Access control (must log in to upload)
+  04-supabase-sign-in.png         -> Step 1 Supabase account
+  05-home-failed-load-videos.png
+  06-signup-page.png              -> Registration UI
+
+YOU MUST CAPTURE MANUALLY (after logging into Supabase dashboard):
+  Fig-A  Supabase New Project screen          -> Report page 3
+  Fig-B  Storage sidebar + videos bucket      -> Report page 4
+  Fig-C  thumbnails bucket (public)           -> Report page 4
+  Fig-D  videos bucket Policies list          -> Report page 5
+  Fig-E  thumbnails bucket Policies list      -> Report page 5
+
+CODE SCREENSHOTS (open in Cursor, Win+Shift+S):
+  Fig-F  TikTok_Server/package.json (@supabase/supabase-js)     -> page 6
+  Fig-G  src/lib/supabase.js                                   -> page 6-7
+  Fig-H  .env (blur secret keys!)                              -> page 7
+  Fig-I  src/services/storageService.js                        -> page 7-8
+  Fig-J  src/controllers/videoController.js (createVideo/delete) -> page 8
+  Fig-K  prisma/schema.prisma (storage path fields)            -> page 9
+  Fig-L  scripts/migrateVideosToSupabase.js                    -> page 9
+  Fig-M  TikTok_Frontend/package.json                          -> page 10
+  Fig-N  src/lib/supabase.js                                   -> page 10
+  Fig-O  .env.local                                            -> page 10
+  Fig-P  src/services/uploadService.js                         -> page 10
+  Fig-Q  src/app/upload/page.jsx                               -> page 11
+  Fig-R  src/components/ui/VideoCard.jsx (getFullVideoUrl)     -> page 11
+
+TESTING (start backend + frontend first):
+  npm run kill-port
+  npm run db:reset
+  npm run dev          (server)
+  npm run dev          (frontend, other terminal)
+  npm run seed         (optional test users)
+
+  Fig-S  Supabase Storage files in videos bucket     -> page 12 upload test
+  Fig-T  Upload page with video selected             -> page 12
+  Fig-U  Home feed with video playing (Supabase URL)  -> page 13
+  Fig-V  Browser DevTools Network tab showing supabase.co URL -> page 13
+  Fig-W  Terminal: node scripts/migrateVideosToSupabase.js -> page 11-12
+
+TEST LOGIN (after seed):
+  Email: user1@example.com
+  Password: password123
