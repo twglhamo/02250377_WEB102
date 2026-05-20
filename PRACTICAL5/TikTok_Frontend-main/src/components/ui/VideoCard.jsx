@@ -36,33 +36,42 @@ const VideoCard = ({ video }) => {
   
   const togglePlay = () => {
     if (videoRef.current && isMountedRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              if (isMountedRef.current) {
-                setIsPlaying(true);
-              }
-            })
-            .catch((error) => {
-              if (isMountedRef.current) {
-                console.error("Error playing video:", error);
-              }
-            });
+      try {
+        if (isPlaying) {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        } else {
+          const playPromise = videoRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                if (isMountedRef.current) {
+                  setIsPlaying(true);
+                }
+              })
+              .catch((error) => {
+                if (isMountedRef.current) {
+                  console.warn("Video play interrupted:", error);
+                  setIsPlaying(false);
+                }
+              });
+          }
         }
+      } catch (error) {
+        console.warn("Error toggling video play:", error);
       }
     }
   };
 
   const toggleMute = (e) => {
     e.stopPropagation(); // Prevent triggering play/pause
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setIsMuted(videoRef.current.muted);
+    if (videoRef.current && isMountedRef.current) {
+      try {
+        videoRef.current.muted = !videoRef.current.muted;
+        setIsMuted(videoRef.current.muted);
+      } catch (error) {
+        console.warn("Could not toggle mute:", error);
+      }
     }
   };
 

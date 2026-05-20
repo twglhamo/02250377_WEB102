@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/authContext';
 import { uploadVideoToStorage, uploadThumbnailToStorage, createVideo } from '../../services/uploadService';
@@ -17,14 +17,26 @@ const UploadPage = () => {
   const [caption, setCaption] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadComplete, setUploadComplete] = useState(false);
   const videoInputRef = useRef(null);
   const thumbnailInputRef = useRef(null);
 
+  // Handle redirect after upload completes
+  useEffect(() => {
+    if (uploadComplete) {
+      const timer = setTimeout(() => {
+        router.push('/');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [uploadComplete, router]);
+
   // Redirect if not authenticated
-  if (!isAuthenticated) {
-    router.push('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
 
   const handleVideoChange = (e) => {
     const file = e.target.files[0];
@@ -75,19 +87,33 @@ const UploadPage = () => {
       setUploadProgress(0);
       
       // Step 1: Upload video directly to Supabase
-      const uploadToast = toast.loading('Uploading video... 0%');
+      const uploadToast = toast.loading('Uploading video to cloud... 0%');
       
-      const videoUploadResult = await uploadVideoToStorage(user.id, videoFile);
+      let videoUploadResult;
+      try {
+        videoUploadResult = await uploadVideoToStorage(user.id, videoFile);
+      } catch (err) {
+        console.error('Video upload to Supabase failed:', err);
+        toast.error('Failed to upload video to cloud storage', { id: uploadToast });
+        throw err;
+      }
+      
       setUploadProgress(50);
-      toast.loading('Uploading video... 50%', { id: uploadToast });
+      toast.loading('Processing thumbnail... 50%', { id: uploadToast });
       
       let thumbnailUploadResult = null;
       if (thumbnailFile) {
-        thumbnailUploadResult = await uploadThumbnailToStorage(user.id, thumbnailFile);
+        try {
+          thumbnailUploadResult = await uploadThumbnailToStorage(user.id, thumbnailFile);
+        } catch (err) {
+          console.error('Thumbnail upload to Supabase failed:', err);
+          // Don't fail - thumbnail is optional
+          toast.success('Video uploaded without thumbnail', { id: uploadToast });
+        }
       }
       
       setUploadProgress(75);
-      toast.loading('Uploading video... 75%', { id: uploadToast });
+      toast.loading('Saving to database... 75%', { id: uploadToast });
       
       // Step 2: Create video in the database with the Supabase URLs
       const videoData = {
@@ -101,11 +127,26 @@ const UploadPage = () => {
         videoData.thumbnailStoragePath = thumbnailUploadResult.storagePath;
       }
       
-      await createVideo(videoData);
+      try {
+        await createVideo(videoData);
+      } catch (err) {
+        console.error('Database save failed:', err);
+        toast.error(`Failed to save video: ${err.message}`, { id: uploadToast });
+        throw err;
+      }
       
       setUploadProgress(100);
       toast.success('Video uploaded successfully!', { id: uploadToast });
-      router.push('/');
+      
+      // Reset form
+      setVideoFile(null);
+      setThumbnailFile(null);
+      setCaption('');
+      setVideoPreview(null);
+      setThumbnailPreview(null);
+      
+      // Trigger redirect via useEffect
+      setUploadComplete(true);
     } catch (error) {
       console.error('Upload error:', error);
       toast.error(error.message || 'Failed to upload video');

@@ -87,7 +87,7 @@
         }
         
         // Update video record with new URLs and storage paths
-        response_prisma = await prisma.video.update({
+        await prisma.video.update({
           where: { id: video.id },
           data: {
             videoUrl: newVideoUrl,
@@ -96,7 +96,6 @@
             thumbnailStoragePath,
           },
         });
-        console.log("[DEBUG] response from prisma update", response_prisma)
         console.log(`Updated database record for video ID: ${video.id}`);
       }
       

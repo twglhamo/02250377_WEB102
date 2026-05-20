@@ -1,4 +1,6 @@
 const prisma = require('../lib/prisma');
+const storageService = require('../services/storageService');
+const fs = require('fs');
 
 // Get all videos
 exports.getAllVideos = async (req, res) => {
@@ -325,49 +327,60 @@ exports.getFollowingVideos = async (req, res) => {
 // Create video with Supabase storage
 exports.createVideo = async (req, res) => {
   try {
-    const { caption, audioName } = req.body;
+    // Accept either file uploads OR direct URLs from browser upload
+    const { caption, audioName, videoUrl, videoStoragePath, thumbnailUrl, thumbnailStoragePath } = req.body;
     const userId = req.user.id;
     
-    // Check if files exist
-    if (!req.files || !req.files.video) {
+    // Validate that we have either files or URLs
+    if (!req.files?.video && !videoUrl) {
       return res.status(400).json({ message: 'Video file is required' });
     }
     
-    const videoFile = req.files.video[0];
-    const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null;
+    let finalVideoUrl = videoUrl;
+    let finalVideoStoragePath = videoStoragePath;
+    let finalThumbnailUrl = thumbnailUrl;
+    let finalThumbnailStoragePath = thumbnailStoragePath;
     
-    // Generate unique file names for storage
-    const videoFileName = storageService.generateUniqueFileName(videoFile.originalname);
-    const videoPath = `user-${userId}/${videoFileName}`;
-    
-    let thumbnailPath = null;
-    
-    // Upload video to Supabase
-    const { fileUrl: videoUrl } = await storageService.uploadFile(
-      'videos',
-      videoPath,
-      fs.readFileSync(videoFile.path)
-    );
-    
-    // Upload thumbnail if it exists
-    let thumbnailUrl = null;
-    if (thumbnailFile) {
-      const thumbnailFileName = storageService.generateUniqueFileName(thumbnailFile.originalname);
-      thumbnailPath = `user-${userId}/${thumbnailFileName}`;
+    // If files are provided (legacy), process them
+    if (req.files?.video) {
+      const videoFile = req.files.video[0];
+      const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null;
       
-      const { fileUrl } = await storageService.uploadFile(
-        'thumbnails',
-        thumbnailPath,
-        fs.readFileSync(thumbnailFile.path)
+      // Generate unique file names for storage
+      const videoFileName = storageService.generateUniqueFileName(videoFile.originalname);
+      const videoPath = `user-${userId}/${videoFileName}`;
+      
+      let thumbnailPath = null;
+      
+      // Upload video to Supabase
+      const { fileUrl: uploadedVideoUrl } = await storageService.uploadFile(
+        'videos',
+        videoPath,
+        fs.readFileSync(videoFile.path)
       );
+      finalVideoUrl = uploadedVideoUrl;
+      finalVideoStoragePath = videoPath;
       
-      thumbnailUrl = fileUrl;
-    }
-    
-    // Clean up local files after uploading to Supabase
-    fs.unlinkSync(videoFile.path);
-    if (thumbnailFile) {
-      fs.unlinkSync(thumbnailFile.path);
+      // Upload thumbnail if it exists
+      if (thumbnailFile) {
+        const thumbnailFileName = storageService.generateUniqueFileName(thumbnailFile.originalname);
+        thumbnailPath = `user-${userId}/${thumbnailFileName}`;
+        
+        const { fileUrl } = await storageService.uploadFile(
+          'thumbnails',
+          thumbnailPath,
+          fs.readFileSync(thumbnailFile.path)
+        );
+        
+        finalThumbnailUrl = fileUrl;
+        finalThumbnailStoragePath = thumbnailPath;
+      }
+      
+      // Clean up local files after uploading to Supabase
+      fs.unlinkSync(videoFile.path);
+      if (thumbnailFile) {
+        fs.unlinkSync(thumbnailFile.path);
+      }
     }
     
     // Create video record in database
@@ -376,11 +389,11 @@ exports.createVideo = async (req, res) => {
         userId: parseInt(userId),
         caption,
         audioName,
-        videoUrl,
-        thumbnailUrl,
+        videoUrl: finalVideoUrl,
+        thumbnailUrl: finalThumbnailUrl,
         // Store reference to file paths in Supabase for potential deletion later
-        videoStoragePath: videoPath,
-        thumbnailStoragePath: thumbnailPath
+        videoStoragePath: finalVideoStoragePath,
+        thumbnailStoragePath: finalThumbnailStoragePath
       },
       include: {
         user: {
@@ -397,7 +410,11 @@ exports.createVideo = async (req, res) => {
     res.status(201).json(newVideo);
   } catch (error) {
     console.error('Error creating video:', error);
-    res.status(500).json({ message: 'Failed to create video' });
+    console.error('Error details:', error.message);
+    res.status(500).json({ 
+      message: 'Failed to create video',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+    });
   }
 };
 

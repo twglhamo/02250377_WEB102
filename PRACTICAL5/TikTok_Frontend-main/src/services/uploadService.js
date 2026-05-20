@@ -72,10 +72,12 @@ export const uploadThumbnailToStorage = async (userId, file) => {
 // Create video with direct upload to Supabase
 export const createVideo = async (videoData) => {
   try {
+    console.log('Sending video data to backend:', videoData);
     const response = await apiClient.post('/videos', videoData);
     return response.data;
   } catch (error) {
     console.error('Error creating video:', error);
-    throw error;
+    console.error('Error response:', error.response?.data);
+    throw new Error(error.response?.data?.message || error.message || 'Failed to create video');
   }
 };

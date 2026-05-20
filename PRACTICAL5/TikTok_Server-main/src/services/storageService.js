@@ -14,6 +14,7 @@ const generateUniqueFileName = (originalName) => {
 // Upload a file to Supabase Storage
 const uploadFile = async (bucketName, filePath, fileData) => {
   try {
+    console.log(`Uploading to Supabase: bucket=${bucketName}, path=${filePath}`);
     const { data, error } = await supabase.storage
       .from(bucketName)
       .upload(filePath, fileData, {
@@ -21,8 +22,12 @@ const uploadFile = async (bucketName, filePath, fileData) => {
         upsert: false
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error(`Supabase upload error for ${bucketName}:`, error);
+      throw new Error(`Upload failed: ${error.message}`);
+    }
 
+    console.log(`Successfully uploaded to ${bucketName}:`, data);
     // Create a public URL for the file
     const fileUrl = getPublicUrl(bucketName, filePath);
 
