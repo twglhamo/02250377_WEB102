@@ -42,34 +42,16 @@ async function main() {
   // Create 50 videos (5 per user)
   console.log('Creating videos...');
   
-  // Sample video URLs that actually work
-  const sampleVideos = [
-    'https://commondatastorage.googleapis.com/gtv-videos-library/sample/BigBuckBunny.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ElephantsDream.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ForBiggerBlazes.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ForBiggerEscapes.mp4',
-    'https://commondatastorage.googleapis.com/gtv-videos-library/sample/ForBiggerFun.mp4',
-  ];
-
-  const sampleThumbnails = [
-    'https://peach.blender.org/wp-content/uploads/12_video_bunny_2160p_web.jpg',
-    'https://upload.wikimedia.org/wikipedia/commons/8/84/Elephants_Dream.png',
-    'https://peach.blender.org/wp-content/uploads/03_video_web.jpg',
-    'https://peach.blender.org/wp-content/uploads/10_video_web.jpg',
-    'https://peach.blender.org/wp-content/uploads/11_video_web.jpg',
-  ];
-  
   const videos = [];
-  for (let i = 0; i < users.length; i++) {
+  for (let userId = 1; userId <= 10; userId++) {
     for (let j = 1; j <= 5; j++) {
-      const videoIndex = (i + j) % sampleVideos.length;
       const video = await prisma.video.create({
         data: {
-          userId: users[i].id,
-          caption: `Amazing video #${j} by ${users[i].username}`,
-          videoUrl: sampleVideos[videoIndex],
-          thumbnailUrl: sampleThumbnails[videoIndex],
-          audioName: `Original Sound - ${users[i].username}`,
+          userId,
+          caption: `Video ${j} from user ${userId}`,
+          videoUrl: `https://example.com/videos/user${userId}_video${j}.mp4`,
+          thumbnailUrl: `https://example.com/thumbnails/user${userId}_video${j}.jpg`,
+          audioName: `Original Sound - User ${userId}`,
           views: Math.floor(Math.random() * 10000)
         }
       });

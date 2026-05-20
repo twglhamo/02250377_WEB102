@@ -23,7 +23,7 @@ router.put('/:id', protect, videoController.updateVideo);
 router.delete('/:id', protect, videoController.deleteVideo);
 
 // Like/unlike video
-router.post('/:id/like', protect, videoController.toggleVideoLike);
-router.delete('/:id/like', protect, videoController.toggleVideoLike);
+// router.post('/:id/like', protect, videoController.toggleVideoLike);
+// router.delete('/:id/like', protect, videoController.toggleVideoLike);
 
 module.exports = router;

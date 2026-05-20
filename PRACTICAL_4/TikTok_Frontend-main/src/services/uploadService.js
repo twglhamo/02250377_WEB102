@@ -1,5 +1,5 @@
 import supabase from '../lib/supabase';
-import apiClient from '../lib/axios';
+import apiClient from '../lib/api-config.js';
 
 // Generate a unique file name
 const generateUniqueFileName = (originalName) => {
